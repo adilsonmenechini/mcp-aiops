@@ -1,0 +1,43 @@
+services:
+  mcpdatadog:
+    build: ./servers/mcp-datadog
+    container_name: mcpdatadog
+    restart: always
+    environment:
+      - DATADOG_API_KEY=${DATADOG_API_KEY}
+      - DATADOG_APP_KEY=${DATADOG_APP_KEY}
+    volumes:
+      - mcpdatadog_data:/app
+    ports:
+      - "8101:8000"
+
+  mcpduckduckgo:
+    build: ./servers/mcp-duckduckgo
+    container_name: mcpduckduckgo
+    restart: always
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - mcpduckduckgo_data:/app
+    ports:
+      - "8102:8000"
+
+  hostclient:
+    build: ./clients/ui-streamlit
+    container_name: hostclient
+    env_file: ./clients/ui-streamlit/.env
+    restart: always
+    volumes:
+      - hostclient_data:/app
+    ports:
+      - "8501:8501"
+    network_mode: "host"
+    command: >
+      streamlit run /app/app.py
+    depends_on:
+      - mcpdatadog
+
+volumes:
+  mcpdatadog_data:
+  mcpduckduckgo_data:
+  hostclient_data:

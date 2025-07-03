@@ -1,0 +1,16 @@
+[project]
+name = "mcp-user-db"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=1.9.4",
+    "aiosqlite>=0.19.0",
+    "db-sqlite3>=0.0.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["./"]
+include = ["server.py"]
+namespaces = false

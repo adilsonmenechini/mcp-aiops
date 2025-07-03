@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "mcp-datadog": {
+      "transport": "sse",
+      "url": "http://localhost:8101/sse",
+      "timeout": 600,
+      "headers": null,
+      "sse_read_timeout": 900,
+      "env": {
+        "DATADOG_API_KEY": "*****************************",
+        "DATADOG_APP_KEY": "****************************"
+      }
+    },
+    "mcp-duckduckgo": {
+      "transport": "sse",
+      "url": "http://localhost:8102/sse",
+      "timeout": 600,
+      "headers": null,
+      "sse_read_timeout": 900
+    }
+  }
+}

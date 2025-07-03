@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "sqlite": {
+      "command": "uv",
+      "args": ["--directory", "/Users/adilsonmenechini/SRE/MCP/mcp-aiops/servers/mcp-user-db/", "run", "mcp", "run", "server.py"]
+    },
+    "ddg-search": {
+      "command": "uv",
+      "args": ["--directory", "/Users/adilsonmenechini/SRE/MCP/mcp-aiops/servers/mcp-duckduckgo/", "run", "mcp", "run", "server.py"]
+    },
+    "datadog": {
+      "command": "uv",
+      "args": ["--directory", "/Users/adilsonmenechini/SRE/MCP/mcp-aiops/servers/mcp-datadog/", "run", "mcp", "run", "main.py"],
+      "env": {
+        "DATADOG_API_KEY": "*****************************",
+        "DATADOG_APP_KEY": "****************************"
+      }
+    }
+  }
+}
