@@ -1,11 +1,11 @@
 import logging
 import sys
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr) # Redirect logs to stderr
-
 from mcp.server.fastmcp import FastMCP
 from modules import mcp_tools  # Import tool functions
 from pathlib import Path
 from mcp.server.fastmcp.resources import FileResource
+
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr) # Redirect logs to stderr
 
 # Initialize MCP server
 mcp = FastMCP("Datadog Integration Service", host="0.0.0.0", port=8000)

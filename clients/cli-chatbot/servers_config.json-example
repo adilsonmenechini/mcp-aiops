@@ -18,3 +18,22 @@
     }
   }
 }
+
+{
+  "mcpServers": {
+    "mcp-datadog": {
+      "transport": "sse",
+      "url": "http://mcpdatadog:8000/sse",
+      "timeout": 600,
+      "headers": null,
+      "sse_read_timeout": 900
+    },
+    "mcp-ddg": {
+      "transport": "sse",
+      "url": "http://mcpduckduckgo:8000/sse",
+      "timeout": 600,
+      "headers": null,
+      "sse_read_timeout": 900
+    }
+  }
+}

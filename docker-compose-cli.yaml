@@ -1,0 +1,40 @@
+services:
+  mcpdatadog:
+    build: ./servers/mcp-datadog
+    container_name: mcpdatadog
+    restart: always
+    env_file: ./servers/mcp-datadog/.env
+    volumes:
+      - mcpdatadog_data:/app
+    ports:
+      - "8101:8000"
+
+  mcpduckduckgo:
+    build: ./servers/mcp-duckduckgo
+    container_name: mcpduckduckgo
+    restart: always
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - mcpduckduckgo_data:/app
+    ports:
+      - "8102:8000"
+
+  hostclient:
+    build: ./clients/cli-chatbot
+    container_name: hostclient
+    env_file: ./clients/cli-chatbot/.env
+    restart: always
+    links:
+      - mcpdatadog
+      - mcpduckduckgo
+    volumes:
+      - ./clients/cli-chatbot:/app 
+    depends_on:
+      - mcpdatadog
+    command: tail -f /dev/null
+
+volumes:
+  mcpdatadog_data:
+  mcpduckduckgo_data:
+  hostclient_data:
