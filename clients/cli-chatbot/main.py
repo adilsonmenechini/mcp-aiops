@@ -37,7 +37,7 @@ async def main() -> None:
     servers = [Server(name, srv_config) for name, srv_config in server_config["mcpServers"].items()]
 
     llm_client = LLMClient() # Model name can be passed here if desired, e.g.
-    chat_session = ChatSession(servers, llm_client, sre_system_prompt)
+    chat_session = ChatSession(servers, llm_client, sre_system_prompt, llm_config_params=config.llm_config_params)
     await chat_session.start()
 
 

@@ -13,8 +13,6 @@ services:
     build: ./servers/mcp-duckduckgo
     container_name: mcpduckduckgo
     restart: always
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - mcpduckduckgo_data:/app
     ports:

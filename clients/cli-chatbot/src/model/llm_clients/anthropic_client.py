@@ -17,6 +17,16 @@ class AnthropicClient(BaseLLMClient):
             logging.error("ANTHROPIC_API_KEY environment variable not set.")
             raise ValueError("ANTHROPIC_API_KEY environment variable not set.")
 
+        # Instancia o cliente uma vez para reutilização
+        self.llm = ChatAnthropic(
+            anthropic_api_key=self.api_key,
+            model=self.model_name,
+            # Parâmetros padrão podem ser definidos aqui, se desejado
+            temperature=float(os.getenv("LLM_TEMPERATURE", 0.5)),
+            max_tokens=int(os.getenv("LLM_MAX_TOKENS", 4096)),
+            top_k=int(os.getenv("LLM_TOP_K", 2)),
+            top_p=float(os.getenv("LLM_TOP_P", 0.5)),
+        )
         logging.info(f"AnthropicClient (LangChain) initialized with model: {self.model_name}")
 
     def get_response(self, messages: List[Dict[str, str]], **kwargs) -> Union[str, None]:
@@ -60,18 +70,12 @@ class AnthropicClient(BaseLLMClient):
                 # Outros parâmetros Anthropic podem ser adicionados aqui
             }
 
-            llm = ChatAnthropic(
-                anthropic_api_key=self.api_key,
-                model=self.model_name,
-                **llm_params
-            )
-
             # Passar o system_prompt_content como o argumento 'system' se existir
             response_kwargs = {}
             if system_prompt_content:
                 response_kwargs["system"] = system_prompt_content
 
-            response = llm.invoke(langchain_messages, **response_kwargs)
+            response = self.llm.invoke(langchain_messages, **response_kwargs)
             return response.content
         except Exception as e:
             logging.error(f"Error with Anthropic model {self.model_name} (LangChain): {e}")

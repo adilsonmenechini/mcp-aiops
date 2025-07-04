@@ -35,12 +35,13 @@ async def search(query: str, ctx: Context, max_results: int = 10) -> dict:
         }
 
 @mcp.tool()
-async def fetch_content(url: str, ctx: Context) -> dict:
+async def fetch_content(url: str, ctx: Context, max_chars: int = 8000) -> dict:
     """
     Recupera e extrai o conteúdo textual de uma URL.
 
     Args:
         url (str): A URL a ser acessada.
+        max_chars (int, optional): O número máximo de caracteres a serem retornados. Padrão é 8000.
 
     Returns:
         dict: Um dicionário contendo o conteúdo textual formatado.
@@ -61,7 +62,6 @@ async def fetch_content(url: str, ctx: Context) -> dict:
         text = soup.get_text(separator="\n", strip=True)
 
         # Limitar para evitar overload de tokens
-        max_chars = 8000
         trimmed_text = text[:max_chars]
 
         return {

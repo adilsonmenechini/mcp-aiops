@@ -1,6 +1,5 @@
 import logging
 import json
-import os
 from typing import List, Dict, Any
 
 from src.service.server import Server
@@ -11,21 +10,13 @@ class ChatSession:
     Gere a interação geral do chat, orquestrando a comunicação
     entre o utilizador, o LLM e os servidores/ferramentas MCP.
     """
-    def __init__(self, servers: List[Server], llm_client: LLMClient, sre_system_prompt: str = "") -> None:
+    def __init__(self, servers: List[Server], llm_client: LLMClient, sre_system_prompt: str = "", llm_config_params: Dict[str, Any] = None) -> None:
         self.servers: List[Server] = servers
         self.llm_client: LLMClient = llm_client
         self.messages: List[Dict[str, str]] = [] # Armazena o histórico do chat
         self.sre_system_prompt = sre_system_prompt # Armazena o prompt SRE
-
-        # Carrega os parâmetros de configuração do LLM das variáveis de ambiente
-        # Estes serão passados para os clientes LLM específicos (Gemini, Ollama, Anthropic)
-        self.llm_config_params = {
-            "temperature": float(os.getenv("LLM_TEMPERATURE", 0.5)),
-            "max_tokens": int(os.getenv("LLM_MAX_TOKENS", 4096)),
-            "top_k": int(os.getenv("LLM_TOP_K", 2)),
-            "top_p": float(os.getenv("LLM_TOP_P", 0.5)),
-        }
-        logging.info(f"Parâmetros de configuração do LLM carregados: {self.llm_config_params}")
+        self.tool_map: Dict[str, Server] = {} # Mapa para acesso rápido às ferramentas
+        self.llm_config_params = llm_config_params or {}
 
     async def cleanup_servers(self) -> None:
         """
@@ -60,20 +51,21 @@ class ChatSession:
                 logging.info(f"LLM solicitou a execução da ferramenta: {tool_call['tool']}")
                 logging.info(f"Argumentos: {tool_call['arguments']}")
 
-                for server in self.servers:
-                    tools = await server.list_tools() # Lista as ferramentas novamente para garantir que estão atualizadas
-                    if any(tool.name == tool_call["tool"] for tool in tools):
-                        try:
-                            result = await server.execute_tool(tool_call["tool"], tool_call["arguments"])
-                            logging.info(f"Execução da ferramenta bem-sucedida. Resultado: {result}")
-                            return f"Resultado da execução da ferramenta: {result}"
-                        except Exception as e:
-                            error_msg = f"Erro ao executar a ferramenta '{tool_call['tool']}': {str(e)}"
-                            logging.error(error_msg)
-                            return error_msg
+                tool_name = tool_call["tool"]
+                server = self.tool_map.get(tool_name)
 
-                logging.error(f"Nenhum servidor encontrado com a ferramenta: {tool_call['tool']}")
-                return f"Nenhum servidor encontrado com a ferramenta: {tool_call['tool']}"
+                if server:
+                    try:
+                        result = await server.execute_tool(tool_name, tool_call["arguments"])
+                        logging.info(f"Execução da ferramenta '{tool_name}' bem-sucedida. Resultado: {result}")
+                        return f"Resultado da execução da ferramenta: {result}"
+                    except Exception as e:
+                        error_msg = f"Erro ao executar a ferramenta '{tool_name}': {str(e)}"
+                        logging.error(error_msg)
+                        return error_msg
+                
+                logging.error(f"Nenhum servidor encontrado com a ferramenta: {tool_name}")
+                return f"Nenhum servidor encontrado com a ferramenta: {tool_name}"
             return llm_response # Não é uma chamada de ferramenta, retorna como está (resposta original, sem remover markdown)
         except json.JSONDecodeError:
             # Se não for um JSON válido mesmo após remover markdown, trata como resposta em linguagem natural
@@ -98,13 +90,14 @@ class ChatSession:
                     await self.cleanup_servers()
                     return
 
-            # Agrega todas as ferramentas disponíveis e cria a mensagem base do sistema
-            all_tools = []
+            # Agrega todas as ferramentas, cria o mapa de ferramentas e a descrição para o LLM
+            all_tools_desc: List[str] = []
             for server in self.servers:
                 tools = await server.list_tools()
-                all_tools.extend(tools)
-
-            tools_description = "\n".join([tool.format_for_llm() for tool in all_tools])
+                for tool in tools:
+                    self.tool_map[tool.name] = server
+                    all_tools_desc.append(tool.format_for_llm())
+            tools_description = "\n".join(all_tools_desc)
 
             # Mensagem base do sistema para o papel do assistente e uso de ferramentas
             base_system_message = (

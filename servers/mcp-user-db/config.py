@@ -1,6 +1,6 @@
 import aiosqlite
 
-async def get_conn():
+async def get_conn() -> aiosqlite.Connection:
     """Cria uma conexão assíncrona com o banco de dados."""
     db = await aiosqlite.connect("users.db")
     await db.execute(
@@ -14,3 +14,7 @@ async def get_conn():
     )
     await db.commit()
     return db
+
+async def close_conn(conn: aiosqlite.Connection):
+    """Fecha a conexão com o banco de dados."""
+    await conn.close()
