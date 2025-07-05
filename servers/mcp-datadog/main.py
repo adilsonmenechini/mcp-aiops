@@ -8,7 +8,7 @@ from mcp.server.fastmcp.resources import FileResource
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', stream=sys.stderr) # Redirect logs to stderr
 
 # Initialize MCP server
-mcp = FastMCP("Datadog Integration Service")
+mcp = FastMCP("Datadog Integration Service", host="0.0.0.0", port=8000)
 
 # Registra cada ferramenta apenas uma vez usando um conjunto
 registered_tools = set()
@@ -39,4 +39,4 @@ def review_code(code: str) -> str:
     return f"Please review this code:\n\n{code}"
 
 if __name__ == "__main__":
-    mcp.run(transport="sse", host="0.0.0.0", port=8101)
+    mcp.run(transport="sse")

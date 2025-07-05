@@ -25,15 +25,16 @@ class Configuration:
             params = {
                 "temperature": float(os.getenv("LLM_TEMPERATURE", 0.5)),
                 "max_tokens": int(os.getenv("LLM_MAX_TOKENS", 4096)),
-                "top_k": int(os.getenv("LLM_TOP_K", 2)),
-                "top_p": float(os.getenv("LLM_TOP_P", 0.5)),
+                # Removidos top_k e top_p pois não são suportados pelo ChatAnthropic
+                # "top_k": int(os.getenv("LLM_TOP_K", 2)),
+                # "top_p": float(os.getenv("LLM_TOP_P", 0.5)),
             }
             logging.info(f"Parâmetros de configuração do LLM carregados: {params}")
             return params
         except (ValueError, TypeError) as e:
             logging.error(f"Erro ao carregar configuração do LLM: {e}. Usando valores padrão.")
             # Retorna padrões seguros em caso de erro
-            return {"temperature": 0.5, "max_tokens": 4096, "top_k": 2, "top_p": 0.5}
+            return {"temperature": 0.5, "max_tokens": 4096}
 
 class LogLevel:
     # Configure logging

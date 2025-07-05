@@ -39,40 +39,56 @@ class ChatSession:
             logging.error("O LLM não forneceu uma resposta.")
             return "O LLM não respondeu ou ocorreu um erro."
         
+        logging.debug(f"ChatSession - Processing LLM response: {llm_response[:200]}...")
+        
         # Tenta remover o bloco de código markdown, se presente
         stripped_response = llm_response.strip()
         if stripped_response.startswith("```json") and stripped_response.endswith("```"):
             stripped_response = stripped_response[len("```json"):-len("```")].strip()
-            logging.debug(f"Markdown removido da resposta do LLM. Nova resposta: {stripped_response}")
+            logging.debug(f"ChatSession - Markdown removido da resposta do LLM. Nova resposta: {stripped_response}")
+
+        # Verifica se parece com JSON antes de tentar fazer parse
+        if stripped_response.startswith("{") and stripped_response.endswith("}"):
+            logging.debug("ChatSession - Response appears to be JSON, attempting to parse...")
+        else:
+            logging.debug("ChatSession - Response does not appear to be JSON, treating as natural language")
+            return llm_response
 
         try:
             tool_call = json.loads(stripped_response) # Usa a resposta sem markdown aqui
+            logging.debug(f"ChatSession - Successfully parsed JSON: {tool_call}")
+            
             if "tool" in tool_call and "arguments" in tool_call:
-                logging.info(f"LLM solicitou a execução da ferramenta: {tool_call['tool']}")
-                logging.info(f"Argumentos: {tool_call['arguments']}")
+                logging.info(f"ChatSession - LLM solicitou a execução da ferramenta: {tool_call['tool']}")
+                logging.info(f"ChatSession - Argumentos: {tool_call['arguments']}")
 
                 tool_name = tool_call["tool"]
                 server = self.tool_map.get(tool_name)
+                
+                logging.debug(f"ChatSession - Available tools in tool_map: {list(self.tool_map.keys())}")
 
                 if server:
                     try:
+                        logging.debug(f"ChatSession - Executing tool '{tool_name}' on server '{server.name}'")
                         result = await server.execute_tool(tool_name, tool_call["arguments"])
-                        logging.info(f"Execução da ferramenta '{tool_name}' bem-sucedida. Resultado: {result}")
+                        logging.info(f"ChatSession - Execução da ferramenta '{tool_name}' bem-sucedida. Resultado: {result}")
                         return f"Resultado da execução da ferramenta: {result}"
                     except Exception as e:
                         error_msg = f"Erro ao executar a ferramenta '{tool_name}': {str(e)}"
-                        logging.error(error_msg)
+                        logging.error(f"ChatSession - {error_msg}")
                         return error_msg
                 
-                logging.error(f"Nenhum servidor encontrado com a ferramenta: {tool_name}")
+                logging.error(f"ChatSession - Nenhum servidor encontrado com a ferramenta: {tool_name}")
                 return f"Nenhum servidor encontrado com a ferramenta: {tool_name}"
-            return llm_response # Não é uma chamada de ferramenta, retorna como está (resposta original, sem remover markdown)
-        except json.JSONDecodeError:
+            else:
+                logging.debug("ChatSession - JSON parsed but missing 'tool' or 'arguments' keys")
+                return llm_response # Não é uma chamada de ferramenta, retorna como está (resposta original, sem remover markdown)
+        except json.JSONDecodeError as e:
             # Se não for um JSON válido mesmo após remover markdown, trata como resposta em linguagem natural
-            logging.info("A resposta do LLM não é uma chamada de ferramenta JSON, a tratar como linguagem natural.")
+            logging.debug(f"ChatSession - JSON decode error: {e}. Treating as natural language.")
             return llm_response
         except Exception as e:
-            logging.error(f"Ocorreu um erro inesperado ao processar a resposta do LLM: {e}")
+            logging.error(f"ChatSession - Ocorreu um erro inesperado ao processar a resposta do LLM: {e}")
             return f"Ocorreu um erro interno: {e}"
 
 
@@ -101,29 +117,31 @@ class ChatSession:
 
             # Mensagem base do sistema para o papel do assistente e uso de ferramentas
             base_system_message = (
-                "É um assistente SRE especialista integrado com o Protocolo de Contexto do Modelo (MCP), "
+                "Você é um assistente SRE especialista integrado com o Protocolo de Contexto do Modelo (MCP), "
                 "com acesso a várias ferramentas e recursos para ajudar em tarefas específicas.\n\n"
                 "📚 FERRAMENTAS DISPONÍVEIS:\n"
                 f"{tools_description}\n\n"
-                "🔧 INSTRUÇÕES DE USO:\n\n"
-                "1. Para usar uma ferramenta, responda APENAS com um JSON no formato:\n"
+                "🔧 INSTRUÇÕES CRÍTICAS PARA USO DE FERRAMENTAS:\n\n"
+                "QUANDO PRECISAR USAR UMA FERRAMENTA:\n"
+                "1. Responda EXCLUSIVAMENTE com um JSON válido no formato exato:\n"
                 "{\n"
-                '  "tool": "nome_da_ferramenta",\n'
+                '  "tool": "nome_exato_da_ferramenta",\n'
                 '  "arguments": {\n'
-                '    "param1": "valor1",\n'
-                '    "param2": "valor2"\n'
+                '    "parametro1": "valor1",\n'
+                '    "parametro2": "valor2"\n'
                 "  }\n"
                 "}\n\n"
-                "2. O JSON deve conter:\n"
-                "   - tool: o nome exato da ferramenta desejada\n"
-                "   - arguments: parâmetros exigidos pela ferramenta\n\n"
-                "3. Se a ferramenta retornar resultados, eles serão processados e incorporados ao contexto.\n\n"
-                "4. Para respostas que não exigem ferramentas, use texto natural.\n\n"
-                "⚠️ IMPORTANTE:\n"
-                "- Verifique os parâmetros obrigatórios para cada ferramenta.\n"
-                "- Use apenas as ferramentas listadas acima.\n"
-                "- Mantenha o formato JSON exato ao usar ferramentas.\n"
-                "- Responda em texto natural quando não estiver usando ferramentas."
+                "2. REGRAS OBRIGATÓRIAS:\n"
+                "   - Use APENAS o nome exato da ferramenta listada acima\n"
+                "   - Inclua TODOS os parâmetros obrigatórios\n"
+                "   - NÃO adicione texto antes ou depois do JSON\n"
+                "   - NÃO use markdown ou formatação\n"
+                "   - O JSON deve ser válido e bem formado\n\n"
+                "3. QUANDO NÃO USAR FERRAMENTAS:\n"
+                "   - Para conversas normais, responda em texto natural\n"
+                "   - Para explicações, use linguagem natural\n"
+                "   - Para resumos de resultados, use texto natural\n\n"
+                "⚠️ CRÍTICO: Se você decidir usar uma ferramenta, sua resposta deve conter APENAS o JSON, nada mais."
             )
 
             # Combina o prompt do sistema SRE com a mensagem base do sistema

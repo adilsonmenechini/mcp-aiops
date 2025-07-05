@@ -1,333 +1,497 @@
 # MCP AIOps
 
-![MCP Logo](https://via.placeholder.com/150x50?text=MCP+aiops) *placeholder for actual logo*
+<div align="center">
 
-Este é um aiops para o Model Context Protocol (MCP) que fornece uma integração robusta com o Datadog através de interfaces web e CLI.
+![MCP AIOps](https://via.placeholder.com/200x80/1f77b4/ffffff?text=MCP+AIOps)
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](pyproject.toml)
-[![Docker](https://img.shields.io/badge/Docker-✓-blue.svg)](docker-compose.yaml)
+**Plataforma AIOps robusta baseada no Model Context Protocol (MCP)**  
+*Integração completa com Datadog, DuckDuckGo e múltiplos LLMs*
 
-## 🌟 Funcionalidades
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-green.svg)](https://modelcontextprotocol.io/)
+[![Datadog](https://img.shields.io/badge/Datadog-80%2B%20tools-purple.svg)](servers/mcp-datadog/)
 
-- Interface web interativa usando Streamlit
-- Cliente CLI para interações via terminal
-- Integração completa com Datadog
-- Suporte a múltiplos modelos de LLM
-- Comunicação em tempo real via SSE (Server-Sent Events)
+</div>
+
+## 🚀 Quick Start
+
+Escolha seu modo de operação e execute:
+
+```bash
+# Modo UI (Interface Web Streamlit)
+make start client=ui
+
+# Modo CLI (Terminal Interativo)  
+make start client=cli
+
+# Apenas servidores MCP (para desenvolvimento)
+make tools client=ui  # ou client=cli
+```
+
+Acesse:
+- **Interface Web**: http://localhost:8501
+- **CLI**: Execute `make host` para modo interativo
+
+## 📋 Pré-requisitos
+
+| Software | Versão | Instalação |
+|----------|--------|------------|
+| **Python** | 3.12+ | [Download](https://www.python.org/downloads/) |
+| **Docker** | 20.10+ | [Install](https://docs.docker.com/get-started/) |
+| **Docker Compose** | 2.0+ | [Install](https://docs.docker.com/compose/install/) |
+| **Make** | Qualquer | `apt install make` / `brew install make` |
 
 ## 🏗️ Arquitetura
 
-O projeto é composto por dois componentes principais:
+### Visão Geral do MCP Protocol
 
-### Estrutura do Projeto
+```
+┌─────────────────┐    MCP     ┌──────────────────┐    API    ┌─────────────┐
+│   LLM Client    │◄──────────►│   MCP Server     │◄─────────►│  External   │
+│  (UI/CLI)       │  Protocol  │  (Datadog/DDG)   │   Calls   │   Service   │
+└─────────────────┘            └──────────────────┘           └─────────────┘
+```
+
+### Componentes do Sistema
 
 ```
 mcp-aiops/
-├── clients/
-│   ├── cli-chatbot/             # Cliente CLI para interação com o agente IA
-│   └── ui-streamlit/            # Interface web interativa usando Streamlit
-├── servers/
-│   ├── mcp-datadog/             # Servidor MCP para integração com a API Datadog
-│   ├── mcp-duckduckgo/          # Servidor MCP para busca de informações via DuckDuckGo
-│   └── mcp-user-db/             # Servidor MCP para gerenciamento de usuários (exemplo)
-├── docker-compose.yaml          # Configuração para orquestração de serviços Docker
-├── LICENSE                      # Arquivo de licença do projeto
-├── README.md                    # Este arquivo de documentação
-└── docs/                        # Documentação adicional do projeto
-    └── plan.md
+├── clients/                     # Interfaces de usuário
+│   ├── cli-chatbot/            # 🖥️  Terminal interativo
+│   └── ui-streamlit/           # 🌐 Interface web
+├── servers/                     # Servidores MCP
+│   ├── mcp-datadog/            # 📊 80+ ferramentas Datadog
+│   ├── mcp-duckduckgo/         # 🔍 Busca e extração web
+│   └── mcp-user-db/            # 👥 Gerenciamento usuários
+└── Makefile                    # 🛠️  Automação de comandos
 ```
 
-### Clientes
+### Fluxo de Dados
 
-1. **UI Streamlit** (`/clients/ui-streamlit/`)
-   - Interface web interativa
-   - Chat com agente IA
-   - Histórico de conversas
-   - Execução de ferramentas MCP
-   - Configurações dinâmicas
+1. **Cliente** (UI/CLI) envia requisição via MCP Protocol
+2. **Servidor MCP** processa e chama APIs externas (Datadog, DuckDuckGo)
+3. **Resposta** é formatada e retornada ao cliente
+4. **LLM** processa a resposta e gera insights
 
-2. **CLI Chatbot** (`/clients/cli-chatbot/`)
-   - Interface em linha de comando
-   - Mesmas funcionalidades da UI web
+## 💻 Instalação
 
-### Servidores
+### Método 1: Docker (Recomendado)
 
-1. **MCP Datadog** (`/servers/mcp-datadog/`)
-   - Integração com API Datadog
-   - Monitoramento (APM, métricas, logs)
-   - Gerenciamento de incidentes
-   - SLOs e verificações de serviço
-   - Administração (usuários, funções, tags)
-
-2. **MCP DuckDuckGo** (`/servers/mcp-duckduckgo/`)
-   - Integração com a API de busca DuckDuckGo
-   - Ferramentas para busca de informações e extração de conteúdo de URLs
-
-3. **MCP User DB** (`/servers/mcp-user-db/`)
-   - Gerenciamento de usuários
-   - Base de dados local
-
-## 🚀 Instalação
-
-### Início Rápido
-
-Para colocar o projeto em funcionamento rapidamente, siga estes passos:
-
-1. Clone o repositório:
+1. **Clone o repositório**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/adilsonmenechini/mcp-aiops.git
    cd mcp-aiops
    ```
-2. Configure as variáveis de ambiente:
+
+2. **Configure variáveis de ambiente**:
    ```bash
+   # Datadog
    cp servers/mcp-datadog/.env.template servers/mcp-datadog/.env
+   
+   # UI Streamlit  
    cp clients/ui-streamlit/.env-examples clients/ui-streamlit/.env
+   
+   # CLI Chatbot
    cp clients/cli-chatbot/.env-examples clients/cli-chatbot/.env
-   # Edite os arquivos .env com suas credenciais e configurações
    ```
-3. Inicie os serviços com Docker Compose:
+
+3. **Edite os arquivos .env** com suas credenciais:
    ```bash
-   docker-compose up -d
+   # servers/mcp-datadog/.env
+   DATADOG_API_KEY=sua_api_key_aqui
+   DATADOG_APP_KEY=sua_app_key_aqui
+   
+   # clients/*/env (escolha um LLM)
+   LLM_PROVIDER=gemini  # ou anthropic, ollama
+   GOOGLE_API_KEY=sua_api_key_aqui
    ```
-4. Acesse a interface web em `http://localhost:8501` ou o cliente CLI em `clients/cli-chatbot/main.py`.
 
----
-
-### Pré-requisitos
-
-Certifique-se de ter os seguintes softwares instalados em sua máquina:
-
-| Software | Versão Mínima | Link |
-|----------|--------------|------|
-| Docker | 20.10+ | [Download](https://www.docker.com/get-started) |
-| Docker Compose | 2.0+ | [Install](https://docs.docker.com/compose/install/) |
-| Python | 3.9+ | [Download](https://www.python.org/downloads/) |
-| pip | 22.0+ | [Install](https://pip.pypa.io/en/stable/installation/) |
-| uv (opcional) | 0.1+ | [Install](https://github.com/astral-sh/uv) |
-
-> **Note**: O `uv` é recomendado para um gerenciamento de dependências mais rápido e eficiente.
-
-### Passos de Instalação
-
-1. Clone o repositório:
-```bash
-git clone <repository-url>
-cd mcp-aiops
-```
-
-2. Configure as variáveis de ambiente:
-
-### Configuração de Variáveis de Ambiente
-
-O projeto utiliza arquivos `.env` para gerenciar variáveis de ambiente. Siga os passos abaixo para configurá-los:
-
-1. **Servidor MCP Datadog**:
-   - Copie o arquivo de exemplo:
-     ```bash
-     cp servers/mcp-datadog/.env.template servers/mcp-datadog/.env
-     ```
-   - Edite `servers/mcp-datadog/.env` e preencha com suas credenciais do Datadog:
-     ```
-     DATADOG_API_KEY=sua_api_key_aqui
-     DATADOG_APP_KEY=sua_app_key_aqui
-     DATADOG_SITE=datadoghq.com # ou datadoghq.eu, etc.
-     ```
-
-2. **Cliente UI Streamlit**:
-   - Copie o arquivo de exemplo:
-     ```bash
-     cp clients/ui-streamlit/.env-examples clients/ui-streamlit/.env
-     ```
-   - Edite `clients/ui-streamlit/.env` e configure conforme necessário. Exemplo:
-     ```
-     LLM_PROVIDER=gemini
-     GOOGLE_API_KEY=sua_api_key_do_google_aqui
-     GOOGLE_MODEL=gemini-1.5-flash # Ou outro modelo preferido
-     ```
-
-3. **Cliente CLI Chatbot**:
-   - Copie o arquivo de exemplo:
-     ```bash
-     cp clients/cli-chatbot/.env-examples clients/cli-chatbot/.env
-     ```
-   - Edite `clients/cli-chatbot/.env` e configure conforme necessário. Exemplo:
-     ```
-     LLM_PROVIDER=gemini
-     GOOGLE_API_KEY=sua_api_key_do_google_aqui
-     GOOGLE_MODEL=gemini-1.5-flash # Ou outro modelo preferido
-     ```
-
-> **Importante**: Nunca exponha suas chaves de API em repositórios públicos.
-
-3. Crie e ative um ambiente virtual (opcional, mas recomendado):
+4. **Inicie o sistema**:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   make start client=ui    # Interface web
+   # ou
+   make start client=cli   # Terminal
    ```
 
-4. **Instale as dependências do projeto**:
+### Método 2: Desenvolvimento Local
 
-   Recomendado (com `uv`):
+1. **Instale dependências Python**:
    ```bash
-   uv sync
+   # Com uv (recomendado)
+   pip install uv
+   cd clients/ui-streamlit && uv sync
+   cd clients/cli-chatbot && uv sync
+   cd servers/mcp-datadog && uv sync
+   
+   # Ou com pip tradicional
+   pip install -r clients/ui-streamlit/requirements.txt
    ```
 
-   Alternativo (com `pip`):
+2. **Execute servidores MCP**:
    ```bash
-   pip install -r requirements.txt
+   make tools client=ui  # Inicia apenas os servidores
    ```
 
-5. **Inicie os serviços usando Docker Compose**:
+3. **Execute cliente manualmente**:
    ```bash
-   docker-compose up -d
-   ```
-   Para verificar o status dos contêineres:
-   ```bash
-   docker-compose ps
-   ```
-   Para parar os serviços:
-   ```bash
-   docker-compose down
+   # UI
+   cd clients/ui-streamlit && streamlit run app.py
+   
+   # CLI  
+   cd clients/cli-chatbot && python main.py
    ```
 
-## 💻 Uso
+## 🎯 Uso
 
-### Interface Web
+### Interface Web (Streamlit)
 
-1. Acesse a interface web em `http://localhost:8501`
-2. Use o chat para interagir com o agente
-3. Execute ferramentas do Datadog através dos comandos
-
-**Comandos básicos:**
-- `/help` - Mostra ajuda
-- `/tools` - Lista ferramentas disponíveis
-- `/clear` - Limpa o histórico
+1. **Acesse**: http://localhost:8501
+2. **Configure LLM** na sidebar
+3. **Digite comandos** no chat:
+   ```
+   Liste todos os monitores do Datadog
+   Busque informações sobre "kubernetes monitoring"
+   Crie um monitor para CPU alta
+   ```
 
 ### Cliente CLI
 
-1. Execute o cliente CLI:
+1. **Modo interativo**:
+   ```bash
+   make host  # Abre terminal dentro do container
+   ```
+
+2. **Comandos disponíveis**:
+   ```bash
+   # Ajuda
+   /help
+   
+   # Listar ferramentas
+   /tools
+   
+   # Limpar histórico
+   /clear
+   
+   # Exemplos de uso
+   tools datadog list_monitors
+   tools datadog create_monitor --name "High CPU" --query "avg(last_5m):avg:system.cpu.user{*} > 90"
+   tools duckduckgo search --query "datadog best practices"
+   ```
+
+### Comandos Makefile
+
 ```bash
-cd clients/cli-chatbot
-python main.py
-```
+# Gerenciamento de serviços
+make start client=ui|cli     # Inicia cliente + servidores
+make tools client=ui|cli     # Apenas servidores MCP
+make stop client=ui|cli      # Para tudo
+make logs client=ui|cli      # Visualiza logs
+make clean                   # Remove containers e volumes
 
-2. Digite seus comandos no terminal
-
-**Exemplos de comandos:**
-```bash
-# Listar todos os monitores
-tools datadog list_monitors
-
-# Criar um novo monitor
-tools datadog create_monitor --name "High CPU Usage" --query "avg(last_5m):avg:system.cpu.user{*} > 90"
+# Desenvolvimento
+make host                    # CLI interativo
+make test client=cli         # Testa cliente CLI
 ```
 
 ## 🔧 Ferramentas Disponíveis
 
-### Monitoramento
-- APM (Application Performance Monitoring)
-- Métricas e dashboards
-- Logs e traces
-- Hosts e serviços
+### 📊 Datadog (80+ Ferramentas)
 
-### Gerenciamento de Incidentes
-- Criação e gestão de alertas
-- Gerenciamento de incidentes
-- Análise de causa raiz
-- Downtime programado
+<details>
+<summary><strong>Monitoramento & APM</strong></summary>
 
-### SLOs e Qualidade
-- Definição e monitoramento de SLOs
-- Verificações de serviço
-- Gestão de dependências
-- Métricas de latência e erro
+- **APM**: `list_apm_traces`, `get_apm_trace_details`, `query_apm_errors`, `query_apm_latency`
+- **Métricas**: `query_metrics`, `list_metrics`, `query_p99_latency`, `query_error_rate`
+- **Traces**: `list_traces`, `get_trace_details`, `summarize_traces`
+- **Hosts**: `list_hosts`, `get_host_totals`, `mute_host`, `unmute_host`
 
-### Administração
-- Gestão de usuários e funções
-- Gerenciamento de tags
-- Políticas de configuração
-- Métricas de uso
+</details>
 
-### DuckDuckGo
-- Busca de informações (`search`)
-- Extração de conteúdo de URLs (`fetch_content`)
+<details>
+<summary><strong>Alertas & Incidentes</strong></summary>
 
-## 🔌 Portas
+- **Monitores**: `create_monitor`, `delete_monitor`, `get_monitor_status`, `update_monitor`
+- **Alertas**: `mute_alert`, `unmute_alert`
+- **Incidentes**: `search_incidents`, `list_incidents`, `get_incident`, `update_incident`
+- **Downtime**: `create_downtime`, `update_downtime`, `cancel_downtime`
 
-- UI Streamlit: 8501
-- Servidor MCP Datadog: 8101
-- Servidor MCP DuckDuckGo: 8000
+</details>
 
-## 📚 Documentação
+<details>
+<summary><strong>Administração</strong></summary>
 
-A documentação completa das ferramentas do Datadog está disponível em `/servers/mcp-datadog/docs/modules.md`.
+- **Usuários**: `list_users`, `get_user`
+- **Funções**: `list_roles`, `create_role`, `delete_role`, `update_role`
+- **Tags**: `list_host_tags`, `add_host_tags`, `delete_host_tags`
+- **Dashboards**: `list_dashboards`, `list_prompts`
+
+</details>
+
+<details>
+<summary><strong>SLOs & Qualidade</strong></summary>
+
+- **SLOs**: `list_slos`, `get_slo`, `delete_slo`
+- **Service Checks**: `submit_service_check`, `list_service_checks`
+- **Dependencies**: `list_service_dependencies`, `create_service_dependency`
+- **Root Cause**: `analyze_service_with_apm`
+
+</details>
+
+### 🔍 DuckDuckGo
+
+- **`search`**: Busca informações na web
+- **`fetch_content`**: Extrai conteúdo de URLs específicas
+
+### 👥 User DB
+
+- Gerenciamento local de usuários (exemplo/desenvolvimento)
+
+## ⚙️ Configuração
+
+### LLM Providers
+
+#### Google Gemini (Recomendado)
+```bash
+LLM_PROVIDER=gemini
+GOOGLE_API_KEY=sua_api_key
+GOOGLE_MODEL=gemini-2.0-flash  # ou gemini-1.5-pro
+```
+
+#### Anthropic Claude
+```bash
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sua_api_key
+ANTHROPIC_MODEL=claude-3-5-sonnet-20240620
+```
+
+#### Ollama (Local)
+```bash
+LLM_PROVIDER=ollama
+OLLAMA_MODEL=llama3.2
+# Certifique-se que Ollama está rodando localmente
+```
+
+### Configurações Avançadas
+
+#### Parâmetros do Modelo
+```bash
+LLM_TEMPERATURE=0.5          # Criatividade (0.0-1.0)
+LLM_MAX_TOKENS=4096          # Tokens máximos por resposta
+LLM_TOP_K=2                  # Top-K sampling
+LLM_TOP_P=0.5                # Top-P sampling
+LLM_MAX_RETRIES=3            # Tentativas em caso de erro
+LLM_RETRY_DELAY_SECONDS=2.0  # Delay entre tentativas
+```
+
+#### Logs
+```bash
+LOG_LEVEL=ERROR  # DEBUG, INFO, WARNING, ERROR
+```
+
+### Portas de Serviço
+
+| Serviço | Porta | Descrição |
+|---------|-------|-----------|
+| UI Streamlit | 8501 | Interface web |
+| MCP Datadog | 8101 | Servidor Datadog |
+| MCP DuckDuckGo | 8102 | Servidor DuckDuckGo |
+
+## 🐛 Troubleshooting
+
+### Problemas Comuns
+
+#### Docker não inicia
+```bash
+# Verificar se Docker está rodando
+docker --version
+docker-compose --version
+
+# Limpar containers antigos
+make clean
+```
+
+#### Erro de permissão Docker
+```bash
+# Adicionar usuário ao grupo docker
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+#### Variáveis de ambiente não carregam
+```bash
+# Verificar se arquivos .env existem
+ls -la clients/ui-streamlit/.env
+ls -la servers/mcp-datadog/.env
+
+# Verificar formato (sem espaços)
+cat servers/mcp-datadog/.env
+```
+
+#### LLM não responde
+```bash
+# Verificar API keys
+echo $GOOGLE_API_KEY
+echo $ANTHROPIC_API_KEY
+
+# Testar conectividade
+curl -H "Authorization: Bearer $GOOGLE_API_KEY" \
+     https://generativelanguage.googleapis.com/v1/models
+```
+
+#### Servidores MCP não conectam
+```bash
+# Verificar logs
+make logs client=ui
+
+# Verificar portas
+netstat -tlnp | grep 810
+docker ps
+```
+
+### Logs e Debug
+
+```bash
+# Logs em tempo real
+make logs client=ui
+
+# Logs específicos de um serviço
+docker logs mcpdatadog
+docker logs mcpduckduckgo
+
+# Debug modo verboso
+LOG_LEVEL=DEBUG make start client=ui
+```
 
 ## 🤝 Contribuindo
 
-Sua contribuição é muito bem-vinda! Para contribuir com o projeto, siga os passos abaixo:
+### Desenvolvimento Local
 
-1. Faça um fork do projeto.
-2. Crie uma nova branch para sua feature ou correção de bug:
+1. **Fork e clone**:
    ```bash
-   git checkout -b feature/sua-feature-incrivel
-   # ou
-   git checkout -b bugfix/correcao-de-bug
+   git clone https://github.com/seu-usuario/mcp-aiops.git
+   cd mcp-aiops
    ```
-3. Faça suas alterações e commite-as com mensagens claras e descritivas:
+
+2. **Configurar ambiente**:
    ```bash
-   git commit -m 'feat: Adiciona nova funcionalidade X' # para features
-   # ou
-   git commit -m 'fix: Corrige problema Y' # para correções
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/Mac
+   # .venv\Scripts\activate   # Windows
+   
+   pip install uv
    ```
-4. Envie suas alterações para o seu fork:
+
+3. **Instalar dependências**:
    ```bash
-   git push origin feature/sua-feature-incrivel
+   cd clients/ui-streamlit && uv sync
+   cd ../cli-chatbot && uv sync
+   cd ../../servers/mcp-datadog && uv sync
    ```
-5. Abra um Pull Request para a branch `main` deste repositório, descrevendo suas alterações e o problema que elas resolvem.
 
-### Extensibilidade
+4. **Executar testes**:
+   ```bash
+   make test client=cli
+   ```
 
-O projeto é projetado para ser extensível. Você pode adicionar novos servidores MCP ou clientes seguindo a estrutura existente:
+### Adicionando Novos Servidores MCP
 
-- **Novos Servidores MCP**: Crie um novo diretório em `servers/` e implemente sua lógica de integração com APIs externas, seguindo o padrão dos servidores `mcp-datadog` ou `mcp-duckduckgo`.
-- **Novos Clientes**: Crie um novo diretório em `clients/` e desenvolva sua interface (web, desktop, etc.) para interagir com os servidores MCP, utilizando a arquitetura de comunicação existente.
+1. **Criar estrutura**:
+   ```bash
+   mkdir servers/mcp-novoservico
+   cd servers/mcp-novoservico
+   ```
 
-## 🛠 Troubleshooting
+2. **Implementar servidor**:
+   ```python
+   # server.py
+   from mcp.server import Server
+   
+   server = Server("novo-servico")
+   
+   @server.tool()
+   async def minha_ferramenta():
+       return "Resultado"
+   ```
 
-### Problemas com Docker
-- **Erro de permissão**: Se encontrar erros de permissão com Docker, adicione seu usuário ao grupo docker:
-  ```bash
-  sudo usermod -aG docker $USER
-  newgrp docker
-  ```
+3. **Adicionar ao docker-compose**:
+   ```yaml
+   novoservico:
+     build: ./servers/mcp-novoservico
+     ports:
+       - "8103:8000"
+   ```
 
-### Problemas com variáveis de ambiente
-- Certifique-se de que todos os arquivos `.env` foram criados corretamente
-- Verifique se as variáveis estão no formato `VAR=valor` sem espaços
+### Padrões de Código
 
-### Problemas com dependências Python
-- Se encontrar erros com `uv`, tente usar `pip`:
-  ```bash
-  pip install -r requirements.txt
-  ```
+- **Python 3.12+** com type hints
+- **Async/await** para operações I/O
+- **Pydantic** para validação de dados
+- **Docstrings** para todas as funções públicas
+- **Error handling** robusto
 
-## 🗺 Roadmap
+### Commits
 
-### Próximos recursos planejados
+```bash
+git commit -m "feat: adiciona integração com Grafana"
+git commit -m "fix: corrige timeout em queries longas"
+git commit -m "docs: atualiza README com novos exemplos"
+```
 
+## 📚 Documentação Adicional
+
+- [Documentação Datadog](servers/mcp-datadog/docs/modules.md) - 80+ ferramentas detalhadas
+- [MCP Protocol](https://modelcontextprotocol.io/) - Especificação oficial
+- [Datadog API](https://docs.datadoghq.com/api/) - Referência da API
+
+## 🗺️ Roadmap
+
+### Em Desenvolvimento
 - [ ] Integração com Grafana
-- [ ] Suporte a autenticação OAuth
-- [ ] Dashboard de métricas customizável
-- [ ] Exportação de relatórios em PDF
-- [ ] Suporte a múltiplos idiomas
+- [ ] Suporte a Prometheus
+- [ ] Dashboard customizável
+- [ ] Autenticação OAuth
 
-### Melhorias futuras
+### Planejado
+- [ ] Integração com AWS CloudWatch
+- [ ] Suporte a Kubernetes
+- [ ] Alertas via Slack/Teams
+- [ ] Exportação de relatórios PDF
+- [ ] API REST para integração externa
 
-- Melhor documentação da API
-- Testes automatizados
-- Otimização de performance
+### Futuro
+- [ ] Machine Learning para detecção de anomalias
+- [ ] Integração com Terraform
+- [ ] Suporte multi-tenant
+- [ ] Interface mobile
+
+## 📊 Status do Projeto
+
+- ✅ **Core MCP Protocol** - Implementado
+- ✅ **Datadog Integration** - 80+ ferramentas
+- ✅ **Multi-LLM Support** - Gemini, Claude, Ollama
+- ✅ **Docker Deployment** - Produção ready
+- ✅ **CLI & Web UI** - Interfaces completas
+- 🔄 **Documentation** - Em progresso
+- 🔄 **Testing Suite** - Em desenvolvimento
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a [Licença MIT](LICENSE).
+
+```
+MIT License - Copyright (c) 2025 MCP AIOps Contributors
+```
+
+---
+
+<div align="center">
+
+**Desenvolvido com ❤️ usando MCP Protocol**
+
+[Reportar Bug](https://github.com/adilsonmenechini/mcp-aiops/issues) • 
+[Solicitar Feature](https://github.com/adilsonmenechini/mcp-aiops/issues) • 
+[Contribuir](CONTRIBUTING.md)
+
+</div>
