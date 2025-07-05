@@ -65,6 +65,10 @@ mcp-aiops/
 │   ├── mcp-datadog/            # 📊 80+ ferramentas Datadog
 │   ├── mcp-duckduckgo/         # 🔍 Busca e extração web
 │   └── mcp-user-db/            # 👥 Gerenciamento usuários
+├── common/                      # Configurações compartilhadas
+│   ├── docker-compose-cli.yaml # 🐳 Compose para CLI
+│   ├── docker-compose-ui.yaml  # 🐳 Compose para UI
+│   └── docs.md                 # 📚 Documentação comum
 └── Makefile                    # 🛠️  Automação de comandos
 ```
 

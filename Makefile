@@ -26,40 +26,40 @@ validate-client:
 start: validate-client
 ifeq ($(CLIENT),cli)
 	@echo "Starting CLI client with MCP servers..."
-	docker compose -f docker-compose-cli.yaml up --build -d
+	docker compose -f common/docker-compose-cli.yaml up --build -d
 else ifeq ($(CLIENT),ui)
 	@echo "Starting UI client with MCP servers..."
-	docker compose -f docker-compose-ui.yaml up --build -d
+	docker compose -f common/docker-compose-ui.yaml up --build -d
 endif
 
 # Start only MCP servers based on client type
 tools: validate-client
 ifeq ($(CLIENT),cli)
 	@echo "Starting MCP servers for CLI client..."
-	docker compose -f docker-compose-cli.yaml up --build -d mcpduckduckgo mcpdatadog
+	docker compose -f common/docker-compose-cli.yaml up --build -d mcpduckduckgo mcpdatadog
 else ifeq ($(CLIENT),ui)
 	@echo "Starting MCP servers for UI client..."
-	docker compose -f docker-compose-ui.yaml up --build -d mcpduckduckgo mcpdatadog
+	docker compose -f common/docker-compose-ui.yaml up --build -d mcpduckduckgo mcpdatadog
 endif
 
 # Stop services based on client type
 stop: validate-client
 ifeq ($(CLIENT),cli)
 	@echo "Stopping CLI client and servers..."
-	docker compose -f docker-compose-cli.yaml down --volumes --remove-orphans
+	docker compose -f common/docker-compose-cli.yaml down --volumes --remove-orphans
 else ifeq ($(CLIENT),ui)
 	@echo "Stopping UI client and servers..."
-	docker compose -f docker-compose-ui.yaml down --volumes --remove-orphans
+	docker compose -f common/docker-compose-ui.yaml down --volumes --remove-orphans
 endif
 
 # Show logs based on client type
 logs: validate-client
 ifeq ($(CLIENT),cli)
 	@echo "Showing logs for CLI client..."
-	docker compose -f docker-compose-cli.yaml logs -f
+	docker compose -f common/docker-compose-cli.yaml logs -f
 else ifeq ($(CLIENT),ui)
 	@echo "Showing logs for UI client..."
-	docker compose -f docker-compose-ui.yaml logs -f
+	docker compose -f common/docker-compose-ui.yaml logs -f
 endif
 
 # Test CLI client (only available for CLI)
@@ -75,11 +75,11 @@ test:
 # Start CLI client in host mode (interactive)
 host:
 	@echo "Starting CLI client in host mode..."
-	docker compose -f docker-compose-cli.yaml up --build hostclient
+	docker compose -f common/docker-compose-cli.yaml up --build hostclient
 
 # Clean all containers and volumes
 clean:
 	@echo "Cleaning all containers and volumes..."
-	docker compose -f docker-compose-cli.yaml down --volumes --remove-orphans 2>/dev/null || true
-	docker compose -f docker-compose-ui.yaml down --volumes --remove-orphans 2>/dev/null || true
+	docker compose -f common/docker-compose-cli.yaml down --volumes --remove-orphans 2>/dev/null || true
+	docker compose -f common/docker-compose-ui.yaml down --volumes --remove-orphans 2>/dev/null || true
 	docker system prune -f
